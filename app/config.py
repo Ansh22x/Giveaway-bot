@@ -1,3 +1,4 @@
+import os
 import re
 from typing import Optional
 from pydantic import Field, field_validator
@@ -5,11 +6,23 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    BOT_TOKEN: str = Field(..., description="Telegram Bot API Token")
-    DATABASE_URL: str = Field(..., description="PostgreSQL async connection string")
-    WEBHOOK_SECRET: str = Field(..., description="Secret token for verifying Telegram webhook")
-    WEBHOOK_BASE_URL: str = Field(..., description="Public HTTPS URL for Render / ngrok")
-    ADMIN_CHAT_ID: int = Field(default=0, description="Primary Admin Telegram ID")
+    BOT_TOKEN: str = Field(
+        default="9013281225:AAH3xMNCDSXMttbG2NKlaYJjrz1vfR8JbRs",
+        description="Telegram Bot API Token",
+    )
+    DATABASE_URL: str = Field(
+        default="postgresql://neondb_owner:npg_r4RjlB9MsAyU@ep-falling-cake-bfmmp1a0.c-5.us-west-2.aws.neon.tech/neondb?sslmode=require",
+        description="PostgreSQL async connection string",
+    )
+    WEBHOOK_SECRET: str = Field(
+        default="ultra_giveaway_secret_token_secure_9013281225",
+        description="Secret token for verifying Telegram webhook",
+    )
+    WEBHOOK_BASE_URL: str = Field(
+        default="",
+        description="Public HTTPS URL for Render / ngrok",
+    )
+    ADMIN_CHAT_ID: int = Field(default=6999627465, description="Primary Admin Telegram ID")
     LOG_LEVEL: str = Field(default="INFO", description="Log level")
     PORT: int = Field(default=8000, description="Port to listen on")
 
@@ -45,10 +58,14 @@ class Settings(BaseSettings):
         url = url.replace('?&', '?').rstrip('?&')
         return url
 
-    @field_validator("WEBHOOK_BASE_URL")
+    @field_validator("WEBHOOK_BASE_URL", mode="before")
     @classmethod
-    def clean_webhook_base_url(cls, v: str) -> str:
-        return v.rstrip("/")
+    def clean_webhook_base_url(cls, v: Optional[str]) -> str:
+        url = (v or "").strip().strip('"').strip("'")
+        if not url:
+            # Check Render standard environment variable
+            url = os.environ.get("RENDER_EXTERNAL_URL", "https://ultra-giveaway-bot.onrender.com")
+        return url.rstrip("/")
 
     @property
     def full_webhook_url(self) -> str:

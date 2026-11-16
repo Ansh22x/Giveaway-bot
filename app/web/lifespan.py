@@ -38,19 +38,15 @@ async def lifespan(app: FastAPI):
     global cleanup_task
     logger.info("Initializing Ultra Giveaway Bot webhook server...")
 
-    # Set Telegram Webhook
+    # Always set Telegram Webhook on startup to ensure secret_token and URL are 100% in sync
     try:
-        webhook_info = await bot.get_webhook_info()
-        if webhook_info.url != settings.full_webhook_url:
-            await bot.set_webhook(
-                url=settings.full_webhook_url,
-                secret_token=settings.WEBHOOK_SECRET,
-                allowed_updates=["message", "callback_query", "chat_member"],
-                drop_pending_updates=False,
-            )
-            logger.info(f"Webhook set successfully to {settings.full_webhook_url}")
-        else:
-            logger.info("Webhook already set correctly.")
+        await bot.set_webhook(
+            url=settings.full_webhook_url,
+            secret_token=settings.WEBHOOK_SECRET,
+            allowed_updates=["message", "callback_query", "chat_member"],
+            drop_pending_updates=False,
+        )
+        logger.info(f"Webhook set successfully to {settings.full_webhook_url}")
     except Exception as e:
         logger.error(f"Failed to set Telegram webhook on startup: {e}")
 

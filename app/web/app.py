@@ -73,12 +73,17 @@ async def telegram_webhook(
     Telegram webhook receiver.
     Verifies secret_token, schedules background task, and returns 200 OK within 100ms.
     """
-    if x_telegram_bot_api_secret_token != settings.WEBHOOK_SECRET:
-        logger.warning("Rejected webhook call with invalid or missing secret token.")
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Forbidden: Invalid webhook secret token",
-        )
+    if settings.WEBHOOK_SECRET:
+        received = (x_telegram_bot_api_secret_token or "").strip()
+        expected = settings.WEBHOOK_SECRET.strip()
+        if received != expected:
+            logger.warning(
+                f"Rejected webhook call: secret token mismatch. Expected {expected[:4]}..., received {received[:4]}..."
+            )
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Forbidden: Invalid webhook secret token",
+            )
 
     try:
         data = await request.json()

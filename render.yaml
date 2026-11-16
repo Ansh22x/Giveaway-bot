@@ -13,7 +13,7 @@ services:
       - key: DATABASE_URL
         sync: false
       - key: WEBHOOK_SECRET
-        generateValue: true
+        value: ultra_giveaway_secret_token_secure_9013281225
       - key: WEBHOOK_BASE_URL
         sync: false
       - key: ADMIN_CHAT_ID
