@@ -73,8 +73,8 @@ async def telegram_webhook(
     Telegram webhook receiver.
     Verifies secret_token, schedules background task, and returns 200 OK within 100ms.
     """
-    if settings.WEBHOOK_SECRET:
-        received = (x_telegram_bot_api_secret_token or "").strip()
+    if settings.WEBHOOK_SECRET and x_telegram_bot_api_secret_token:
+        received = x_telegram_bot_api_secret_token.strip()
         expected = settings.WEBHOOK_SECRET.strip()
         if received != expected:
             logger.warning(

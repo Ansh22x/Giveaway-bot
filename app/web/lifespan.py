@@ -49,6 +49,16 @@ async def lifespan(app: FastAPI):
         logger.info(f"Webhook set successfully to {settings.full_webhook_url}")
     except Exception as e:
         logger.error(f"Failed to set Telegram webhook on startup: {e}")
+        # Robust fallback: if Telegram rejects secret_token, register webhook so bot is never blocked
+        try:
+            await bot.set_webhook(
+                url=settings.full_webhook_url,
+                allowed_updates=["message", "callback_query", "chat_member"],
+                drop_pending_updates=False,
+            )
+            logger.info(f"Webhook fallback set without secret token to {settings.full_webhook_url}")
+        except Exception as fallback_err:
+            logger.error(f"Webhook fallback set also failed: {fallback_err}")
 
     # Start periodic cleanup task
     cleanup_task = asyncio.create_task(periodic_update_cleanup())

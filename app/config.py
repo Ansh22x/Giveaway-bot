@@ -38,6 +38,17 @@ class Settings(BaseSettings):
         extra="ignore"
     )
 
+    @field_validator("WEBHOOK_SECRET", mode="before")
+    @classmethod
+    def sanitize_webhook_secret(cls, v: Optional[str]) -> str:
+        if not v:
+            return "ultra_giveaway_secret_token_secure_9013281225"
+        # Telegram API strictly allows only characters: A-Z, a-z, 0-9, _ and -
+        cleaned = re.sub(r'[^A-Za-z0-9_-]', '_', str(v).strip().strip('"').strip("'"))
+        if not cleaned or len(cleaned) < 8:
+            return "ultra_giveaway_secret_token_secure_9013281225"
+        return cleaned[:256]
+
     @field_validator("DATABASE_URL", mode="before")
     @classmethod
     def assemble_db_url(cls, v: str) -> str:
